@@ -3,1020 +3,3348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Study Hub</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Study Planner | Notion Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="icon2_192x192.png" sizes="192x192">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+     <link rel="icon" type="image/png" href="icon2_192x192.png" sizes="192x192">
     <link rel="icon" type="image/png" href="icon2_512x512.png" sizes="512x512">
 
     <link rel="apple-touch-icon" href="icon2_180x180.png">
+    <style>
+        :root {
+            --primary-bg: #fff;
+            --sidebar-bg: #f7f6f3;
+            --text-primary: #37352f;
+            --text-secondary: #6b6b67;
+            --accent: #ec6e5d;
+            --accent-light: #ffeae6;
+            --border: #e6e5e2;
+            --hover-bg: #f1f1ef;
+            --card-bg: #fff;
+            --tag-red: #ffccc9;
+            --tag-green: #cceecd;
+            --tag-blue: #c9daff;
+            --tag-yellow: #ffecc9;
+            --tag-purple: #e0d6ff;
+            --radius: 6px;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            --success: #4caf50;
+            --warning: #ff9800;
+            --info: #2196f3;
+        }
+
+        .dark-mode {
+            --primary-bg: #2c2c2c;
+            --sidebar-bg: #252525;
+            --text-primary: #f1f1ef;
+            --text-secondary: #a9a9a9;
+            --accent: #ff7e6b;
+            --accent-light: #4a3430;
+            --border: #3d3d3d;
+            --hover-bg: #383838;
+            --card-bg: #363636;
+            --tag-red: #5d3b38;
+            --tag-green: #385d3f;
+            --tag-blue: #38445d;
+            --tag-yellow: #5d5338;
+            --tag-purple: #4c385d;
+            --success: #388e3c;
+            --warning: #f57c00;
+            --info: #1976d2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            display: flex;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            border-radius: var(--radius);
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--accent);
+        }
+
+        .logo i {
+            margin-right: 10px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            padding-left: 12px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            margin-bottom: 4px;
+            cursor: pointer;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .sidebar-item.active {
+            background-color: var(--accent-light);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .sidebar-item i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--primary-bg);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: var(--sidebar-bg);
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            width: 300px;
+        }
+
+        .search-bar i {
+            color: var(--text-secondary);
+            margin-right: 10px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            width: 100%;
+            outline: none;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-icon {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .btn-icon:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-icon {
+            width: 78px;
+            height: 78px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            font-size: 32px;
+        }
+
+        .page-title {
+            font-size: 30px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: var(--radius);
+            width: 100%;
+        }
+
+        .page-title:focus {
+            outline: 2px solid var(--accent);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--info));
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Task List */
+        .task-list {
+            margin-top: 24px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task-checkbox {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .task-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .task-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag-urgent {
+            background-color: var(--tag-red);
+        }
+
+        .tag-study {
+            background-color: var(--tag-blue);
+        }
+
+        .tag-exam {
+            background-color: var(--tag-yellow);
+        }
+
+        .tag-project {
+            background-color: var(--tag-purple);
+        }
+
+        .tag-completed {
+            background-color: var(--tag-green);
+        }
+
+        /* Notes Editor */
+        .notes-container {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .editor-toolbar {
+            margin-bottom: 16px;
+        }
+
+        #editor {
+            height: 500px;
+            margin-bottom: 20px;
+            background: var(--primary-bg);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--primary-bg);
+            border-radius: var(--radius);
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: 2px solid var(--accent);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Backup Section */
+        .backup-section {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Timetable */
+        .timetable-container {
+            display: none;
+            flex-direction: column;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .timetable th, .timetable td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .timetable th {
+            background-color: var(--accent-light);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .timetable td {
+            cursor: pointer;
+            height: 80px;
+            vertical-align: top;
+            position: relative;
+        }
+
+        .timetable td:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .time-slot {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            background-color: var(--tag-blue);
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .time-slot:hover {
+            opacity: 0.8;
+        }
+
+        /* Pomodoro Timer */
+        .pomodoro-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .timer-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 8px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: 700;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .timer-mode {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .mode-btn.active {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Calendar */
+        .calendar-container {
+            display: none;
+            flex-direction: column;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            height: 100px;
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: var(--radius);
+            overflow-y: auto;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .calendar-day.header {
+            height: auto;
+            text-align: center;
+            font-weight: 600;
+            padding: 12px;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            cursor: default;
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .calendar-event {
+            font-size: 12px;
+            padding: 4px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            background-color: var(--tag-blue);
+            cursor: pointer;
+        }
+
+        /* Progress Section */
+        .progress-container {
+            display: none;
+            flex-direction: column;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--border);
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 5px;
+        }
+
+        /* Subjects Section */
+        .subjects-container {
+            display: none;
+            flex-direction: column;
+        }
+
+        .subject-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subject-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .subject-content {
+            flex: 1;
+        }
+
+        .subject-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .subject-details {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Resources Section */
+        .resources-container {
+            display: none;
+            flex-direction: column;
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .resource-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            background-color: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .resource-content {
+            flex: 1;
+        }
+
+        .resource-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .resource-details {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Reminders Section */
+        .reminders-container {
+            display: none;
+            flex-direction: column;
+        }
+
+        .reminder-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .reminder-content {
+            flex: 1;
+        }
+
+        .reminder-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .reminder-details {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            padding: 16px;
+            border-radius: var(--radius);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 350px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            border-left-color: var(--success);
+        }
+
+        .notification.warning {
+            border-left-color: var(--warning);
+        }
+
+        .notification.info {
+            border-left-color: var(--info);
+        }
+
+        .notification-icon {
+            font-size: 20px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .notification-close {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+        /* Dashboard Enhancements */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .quote-card {
+            background: linear-gradient(135deg, var(--accent-light), var(--tag-blue));
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .goal-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .sidebar-item span {
+                display: none;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .backup-actions {
+                flex-direction: column;
+            }
+            
+            .timer-circle {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .timetable {
+                font-size: 12px;
+            }
+            
+            .timetable th, .timetable td {
+                padding: 6px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="header-left">
-                <button id="darkModeToggle" class="icon-button"><i class="fas fa-moon"></i></button>
-            </div>
-            <h1 class="app-title">My Study Hub</h1>
-            <div class="header-right">
-                <button id="calculatorButton" class="icon-button"><i class="fas fa-calculator"></i></button>
-            </div>
-        </header>
-
-        <main class="content">
-            <section id="notesSection" class="section active">
-                <div class="section-header">
-                    <h2>Notes Section</h2>
-                    <button id="createNewNoteBtn" class="add-new-btn"><i class="fas fa-plus"></i> New Note</button>
-                </div>
-                <div class="notes-container">
-                    <h3>Your Notes</h3>
-                    <ul id="notesList" class="styled-list notes-list">
-                        <p class="placeholder-text">No notes yet. Click 'New Note' to create one!</p>
-                    </ul>
-
-                    <h3 class="mt-30">Current Note: <span id="currentNoteTitleDisplay">Not Loaded</span></h3>
-                    <div id="editor">
-                        </div>
-                    <button id="saveCurrentNoteBtn" class="action-btn save-btn mt-15"><i class="fas fa-save"></i> Save Current Note</button>
-                    <p class="small-text">Notes are saved in your browser's local storage. Select a note above or create a new one.</p>
-
-                    <h3 class="mt-30">PDF Notes (Local Storage - Limited Capacity)</h3>
-                    <div class="pdf-upload-area">
-                        <p>Upload your PDF notes here:</p>
-                        <input type="file" id="pdfUploadInput" accept=".pdf">
-                        <button id="uploadPdfBtn" class="action-btn"><i class="fas fa-upload"></i> Upload PDF</button>
-                        <p class="small-text">Warning: Storing large PDFs in local storage is not recommended due to size limits and performance. This is for demonstration.</p>
-                        <div id="pdfList" class="pdf-list">
-                            </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="todoSection" class="section">
-                <div class="section-header">
-                    <h2>To-Do List</h2>
-                </div>
-                <div class="todo-input-group">
-                    <input type="text" id="todoInput" placeholder="Enter new task..." class="text-input">
-                    <button id="addTodoItemBtn" class="action-btn"><i class="fas fa-plus"></i> Add</button>
-                </div>
-                <ul id="todoList" class="styled-list">
-                    </ul>
-                <p class="small-text">To-Do items are saved in your browser's local storage.</p>
-            </section>
-
-            <section id="timetableSection" class="section">
-                <div class="section-header">
-                    <h2>Editable Timetable</h2>
-                </div>
-                <div class="timetable-grid">
-                    <p class="small-text">Timetable data is saved in your browser's local storage.</p>
-                    <table class="timetable-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Monday</th>
-                                <th>Tuesday</th>
-                                <th>Wednesday</th>
-                                <th>Thursday</th>
-                                <th>Friday</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            </tbody>
-                    </table>
-                    <button id="saveTimetableBtn" class="action-btn save-btn mt-20"><i class="fas fa-save"></i> Save Timetable</button>
-                </div>
-            </section>
-
-            <section id="homeworkSection" class="section">
-                <div class="section-header">
-                    <h2>Homework</h2>
-                </div>
-                <div class="homework-input-group">
-                    <input type="text" id="homeworkInput" placeholder="e.g., Math Ch 3 exercises" class="text-input">
-                    <input type="date" id="homeworkDueDate" class="text-input">
-                    <button id="addHomeworkItemBtn" class="action-btn"><i class="fas fa-plus"></i> Add</button>
-                </div>
-                <ul id="homeworkList" class="styled-list">
-                    </ul>
-                <p class="small-text">Homework items are saved in your browser's local storage.</p>
-            </section>
-
-            <section id="linksSection" class="section">
-                <div class="section-header">
-                    <h2>Links Section</h2>
-                </div>
-                <div class="link-input-group">
-                    <input type="text" id="linkNameInput" placeholder="Link Name" class="text-input">
-                    <input type="url" id="linkUrlInput" placeholder="https://example.com" class="text-input">
-                    <button id="addLinkItemBtn" class="action-btn"><i class="fas fa-plus"></i> Add</button>
-                </div>
-                <ul id="linksList" class="styled-list">
-                    </ul>
-                <p class="small-text">Links are saved in your browser's local storage.</p>
-            </section>
-
-            <section id="backupRestoreSection" class="section">
-                <div class="section-header">
-                    <h2>Backup & Restore Data</h2>
-                </div>
-                <div class="backup-restore-area">
-                    <p class="small-text">Export all your data (notes, to-dos, timetable, etc.) to a JSON file for backup.</p>
-                    <button id="exportDataBtn" class="action-btn"><i class="fas fa-download"></i> Export All Data</button>
-                    <div class="import-section mt-15">
-                        <p class="small-text">Import data from a previously exported JSON backup file.</p>
-                        <input type="file" id="importFileInput" accept=".json">
-                        <button id="importDataBtn" class="action-btn save-btn"><i class="fas fa-upload"></i> Import Data</button>
-                        <p class="small-text import-warning">Warning: Importing data will overwrite your current data. Be careful!</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <nav class="bottom-nav">
-            <button class="nav-button active" data-target="notesSection">
-                <i class="fas fa-book"></i>
-                <span>Notes</span>
-            </button>
-            <button class="nav-button" data-target="todoSection">
-                <i class="fas fa-list-check"></i>
-                <span>To-Do</span>
-            </button>
-            <button class="nav-button" data-target="timetableSection">
-                <i class="fas fa-calendar-alt"></i>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>StudyPlanner</span>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-title">Workspace</div>
+            <a href="#" class="sidebar-item active" data-page="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="tasks">
+                <i class="fas fa-tasks"></i>
+                <span>Tasks</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="timetable">
+                <i class="fas fa-table"></i>
                 <span>Timetable</span>
-            </button>
-            <button class="nav-button" data-target="homeworkSection">
-                <i class="fas fa-clipboard-check"></i>
-                <span>Homework</span>
-            </button>
-            <button class="nav-button" data-target="linksSection">
-                <i class="fas fa-link"></i>
-                <span>Links</span>
-            </button>
-            <button class="nav-button" data-target="backupRestoreSection">
-                <i class="fas fa-cloud-arrow-up"></i>
-                <span>Backup</span>
-            </button>
-        </nav>
+            </a>
+            <a href="#" class="sidebar-item" data-page="calendar">
+                <i class="fas fa-calendar"></i>
+                <span>Calendar</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="notes">
+                <i class="fas fa-sticky-note"></i>
+                <span>Notes</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-title">Study Materials</div>
+            <a href="#" class="sidebar-item" data-page="subjects">
+                <i class="fas fa-books"></i>
+                <span>Subjects</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="resources">
+                <i class="fas fa-book"></i>
+                <span>Resources</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-title">Tools</div>
+            <a href="#" class="sidebar-item" data-page="pomodoro">
+                <i class="fas fa-stopwatch"></i>
+                <span>Pomodoro Timer</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="progress">
+                <i class="fas fa-chart-pie"></i>
+                <span>Progress Tracker</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="reminders">
+                <i class="fas fa-bell"></i>
+                <span>Reminders</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-title">Settings</div>
+            <a href="#" class="sidebar-item" data-page="backup">
+                <i class="fas fa-database"></i>
+                <span>Backup & Restore</span>
+            </a>
+            <a href="#" class="sidebar-item" id="dark-mode-toggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </a>
+        </div>
     </div>
 
-    <div id="calculatorModal" class="modal">
-        <div class="modal-content calculator-content">
-            <span class="close-button" id="closeCalculatorBtn">&times;</span>
-            <h3>Calculator</h3>
-            <div class="calculator">
-                <input type="text" class="calculator-display" id="calcDisplay" value="0" readonly>
-                <div class="calculator-buttons">
-                    <button class="btn clear" data-action="clear">C</button>
-                    <button class="btn backspace" data-action="backspace"><i class="fas fa-backspace"></i></button>
-                    <button class="btn operator" data-value="%">%</button>
-                    <button class="btn operator" data-value="/">/</button>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Search tasks, notes, subjects...">
+            </div>
+            
+            <div class="user-actions">
+                <button class="btn btn-icon" id="notifications-btn">
+                    <i class="fas fa-bell"></i>
+                    <span id="notification-count" class="notification-badge" style="display: none;">0</span>
+                </button>
+                <button class="btn btn-primary" id="add-task-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Task</span>
+                </button>
+            </div>
+        </div>
 
-                    <button class="btn number" data-value="7">7</button>
-                    <button class="btn number" data-value="8">8</button>
-                    <button class="btn number" data-value="9">9</button>
-                    <button class="btn operator" data-value="*">x</button>
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Dashboard Page -->
+            <div class="page-content" id="dashboard-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <input type="text" class="page-title" id="dashboard-title" value="My Study Dashboard">
+                </div>
 
-                    <button class="btn number" data-value="4">4</button>
-                    <button class="btn number" data-value="5">5</button>
-                    <button class="btn number" data-value="6">6</button>
-                    <button class="btn operator" data-value="-">-</button>
+                <div class="dashboard-header">
+                    <h2>Welcome back! Here's your study overview</h2>
+                    <div class="dashboard-actions">
+                        <button class="btn" id="quick-add-task">
+                            <i class="fas fa-plus"></i> Quick Task
+                        </button>
+                    </div>
+                </div>
 
-                    <button class="btn number" data-value="1">1</button>
-                    <button class="btn number" data-value="2">2</button>
-                    <button class="btn number" data-value="3">3</button>
-                    <button class="btn operator" data-value="+">+</button>
+                <!-- Motivational Quote -->
+                <div class="quote-card">
+                    <p>"The beautiful thing about learning is that no one can take it away from you." - B.B. King</p>
+                </div>
 
-                    <button class="btn number zero" data-value="0">0</button>
-                    <button class="btn number" data-value=".">.</button>
-                    <button class="btn equals" data-action="equals">=</button>
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="pending-tasks">0</div>
+                        <div class="stat-label">Pending Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="completed-tasks">0</div>
+                        <div class="stat-label">Completed Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="upcoming-exams">0</div>
+                        <div class="stat-label">Upcoming Exams</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="study-time">0h</div>
+                        <div class="stat-label">Study Time This Week</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="notes-count">0</div>
+                        <div class="stat-label">Notes Created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="subjects-count">0</div>
+                        <div class="stat-label">Subjects</div>
+                    </div>
+                </div>
+
+                <!-- Weekly Goal -->
+                <div class="goal-card">
+                    <div class="goal-header">
+                        <div class="card-title">Weekly Study Goal</div>
+                        <div id="goal-progress">0%</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="goal-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <p>You've studied <span id="goal-hours">0</span> of 20 hours this week</p>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Today's Tasks</div>
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="task-list" id="today-tasks">
+                                <!-- Tasks will be added here dynamically -->
+                                <p class="empty-state">No tasks for today. Add a task to get started!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Upcoming Deadlines</div>
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="task-list" id="upcoming-tasks">
+                                <!-- Upcoming tasks will be added here dynamically -->
+                                <p class="empty-state">No upcoming deadlines.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Study Progress</div>
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                        <div class="card-content" id="progress-content">
+                            <!-- Progress will be added here dynamically -->
+                            <p class="empty-state">Track your study progress here.</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Recent Notes</div>
+                            <i class="fas fa-ellipsis-h"></i>
+                        </div>
+                        <div class="card-content" id="recent-notes">
+                            <!-- Recent notes will be added here dynamically -->
+                            <p class="empty-state">No notes yet. Create your first note!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Page -->
+            <div class="page-content" id="tasks-page" style="display: none;">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h1 class="page-title">Task Management</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">All Tasks</div>
+                        <button class="btn btn-primary" id="add-task-page-btn">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div class="task-list" id="all-tasks">
+                            <!-- All tasks will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timetable Page -->
+            <div class="page-content timetable-container" id="timetable-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <h1 class="page-title">Weekly Timetable</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Weekly Schedule</div>
+                        <button class="btn btn-primary" id="add-timetable-btn">
+                            <i class="fas fa-plus"></i> Add Schedule Item
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <table class="timetable">
+                            <thead>
+                                <tr>
+                                    <th>Time/Day</th>
+                                    <th>Monday</th>
+                                    <th>Tuesday</th>
+                                    <th>Wednesday</th>
+                                    <th>Thursday</th>
+                                    <th>Friday</th>
+                                    <th>Saturday</th>
+                                    <th>Sunday</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetable-body">
+                                <!-- Timetable will be generated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Page -->
+            <div class="page-content notes-container" id="notes-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                    <input type="text" class="page-title" id="notes-title" placeholder="Notes Title">
+                </div>
+
+                <div class="editor-header">
+                    <div class="editor-toolbar">
+                        <select id="note-subject" class="form-select">
+                            <option value="">Select Subject</option>
+                            <option value="math">Mathematics</option>
+                            <option value="science">Science</option>
+                            <option value="history">History</option>
+                            <option value="english">English</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="editor-actions">
+                        <button class="btn" id="new-note-btn">
+                            <i class="fas fa-plus"></i> New Note
+                        </button>
+                        <button class="btn" id="save-note-btn">
+                            <i class="fas fa-save"></i> Save Note
+                        </button>
+                        <button class="btn btn-primary" id="export-note-btn">
+                            <i class="fas fa-download"></i> Export as PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div id="editor"></div>
+
+                <div class="saved-notes">
+                    <h3>Saved Notes</h3>
+                    <div id="notes-list">
+                        <!-- Notes will be listed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Page -->
+            <div class="page-content calendar-container" id="calendar-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <h1 class="page-title">Study Calendar</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title" id="calendar-month">September 2023</div>
+                        <div>
+                            <button class="btn btn-icon" id="prev-month">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-icon" id="next-month">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="btn btn-primary" id="add-event-btn">
+                                <i class="fas fa-plus"></i> Add Event
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="calendar-grid" id="calendar-days">
+                            <!-- Calendar will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pomodoro Timer Page -->
+            <div class="page-content pomodoro-container" id="pomodoro-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-stopwatch"></i>
+                    </div>
+                    <h1 class="page-title">Pomodoro Timer</h1>
+                </div>
+
+                <div class="timer-mode">
+                    <button class="mode-btn active" data-mode="pomodoro">Pomodoro</button>
+                    <button class="mode-btn" data-mode="short-break">Short Break</button>
+                    <button class="mode-btn" data-mode="long-break">Long Break</button>
+                </div>
+
+                <div class="timer-circle">
+                    <div class="timer-display" id="timer-display">25:00</div>
+                </div>
+
+                <div class="timer-controls">
+                    <button class="btn btn-primary" id="start-timer">
+                        <i class="fas fa-play"></i> Start
+                    </button>
+                    <button class="btn" id="pause-timer">
+                        <i class="fas fa-pause"></i> Pause
+                    </button>
+                    <button class="btn" id="reset-timer">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Pomodoro Sessions</div>
+                    </div>
+                    <div class="card-content">
+                        <p>Sessions Completed: <span id="sessions-count">0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Tracker Page -->
+            <div class="page-content progress-container" id="progress-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h1 class="page-title">Progress Tracker</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Study Progress Overview</div>
+                    </div>
+                    <div class="card-content">
+                        <div id="progress-charts">
+                            <!-- Progress charts will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subjects Page -->
+            <div class="page-content subjects-container" id="subjects-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-books"></i>
+                    </div>
+                    <h1 class="page-title">Subjects</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">My Subjects</div>
+                        <button class="btn btn-primary" id="add-subject-btn">
+                            <i class="fas fa-plus"></i> Add Subject
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div id="subjects-list">
+                            <!-- Subjects will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resources Page -->
+            <div class="page-content resources-container" id="resources-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h1 class="page-title">Resources</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Study Resources</div>
+                        <button class="btn btn-primary" id="add-resource-btn">
+                            <i class="fas fa-plus"></i> Add Resource
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div id="resources-list">
+                            <!-- Resources will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reminders Page -->
+            <div class="page-content reminders-container" id="reminders-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h1 class="page-title">Reminders</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">My Reminders</div>
+                        <button class="btn btn-primary" id="add-reminder-btn">
+                            <i class="fas fa-plus"></i> Add Reminder
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div id="reminders-list">
+                            <!-- Reminders will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup & Restore Page -->
+            <div class="page-content backup-section" id="backup-page">
+                <div class="page-header">
+                    <div class="page-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h1 class="page-title">Backup & Restore</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Backup Your Data</div>
+                    </div>
+                    <div class="card-content">
+                        <p>Create a backup of all your study planner data. This will download a JSON file that you can restore later.</p>
+                        <div class="backup-actions">
+                            <button class="btn btn-primary" id="backup-btn">
+                                <i class="fas fa-download"></i> Backup Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Restore From Backup</div>
+                    </div>
+                    <div class="card-content">
+                        <p>Restore your data from a previously saved backup file.</p>
+                        <div class="form-group">
+                            <label class="form-label">Select Backup File</label>
+                            <input type="file" id="restore-file" class="form-input" accept=".json">
+                        </div>
+                        <div class="backup-actions">
+                            <button class="btn btn-primary" id="restore-btn">
+                                <i class="fas fa-upload"></i> Restore Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Clear All Data</div>
+                    </div>
+                    <div class="card-content">
+                        <p>Warning: This will permanently delete all your data including tasks, notes, and settings.</p>
+                        <div class="backup-actions">
+                            <button class="btn" id="clear-data-btn" style="background-color: #ffccc9; color: #d1453b;">
+                                <i class="fas fa-trash"></i> Clear All Data
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <!-- Add Task Modal -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add New Task</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Task Title</label>
+                    <input type="text" class="form-input" id="task-title" placeholder="What do you need to study?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <select class="form-input" id="task-subject">
+                        <option value="">Select Subject</option>
+                        <option value="math">Mathematics</option>
+                        <option value="science">Science</option>
+                        <option value="history">History</option>
+                        <option value="english">English</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="datetime-local" class="form-input" id="task-due">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select class="form-input" id="task-priority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input" id="task-desc" rows="3" placeholder="Add details about this task"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="save-task">Add Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Timetable Item Modal -->
+    <div class="modal" id="timetable-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add Schedule Item</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Subject/Activity</label>
+                    <input type="text" class="form-input" id="timetable-title" placeholder="e.g., Mathematics Lecture">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Day</label>
+                    <select class="form-input" id="timetable-day">
+                        <option value="monday">Monday</option>
+                        <option value="tuesday">Tuesday</option>
+                        <option value="wednesday">Wednesday</option>
+                        <option value="thursday">Thursday</option>
+                        <option value="friday">Friday</option>
+                        <option value="saturday">Saturday</option>
+                        <option value="sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" class="form-input" id="timetable-start">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Time</label>
+                    <input type="time" class="form-input" id="timetable-end">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location/Details</label>
+                    <input type="text" class="form-input" id="timetable-location" placeholder="e.g., Room 101">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="timetable-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="save-timetable-item">Add to Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal" id="subject-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add New Subject</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Subject Name</label>
+                    <input type="text" class="form-input" id="subject-name" placeholder="e.g., Mathematics">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject Code</label>
+                    <input type="text" class="form-input" id="subject-code" placeholder="e.g., MATH101">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <input type="color" class="form-input" id="subject-color" value="#c9daff">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Instructor</label>
+                    <input type="text" class="form-input" id="subject-instructor" placeholder="Professor name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="subject-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="save-subject">Add Subject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal" id="event-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add New Event</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Event Title</label>
+                    <input type="text" class="form-input" id="event-title" placeholder="Event name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-input" id="event-date">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" class="form-input" id="event-start">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Time</label>
+                    <input type="time" class="form-input" id="event-end">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input" id="event-desc" rows="3" placeholder="Event details"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="event-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="save-event">Add Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notification-container"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const navButtons = document.querySelectorAll('.nav-button');
-            const sections = document.querySelectorAll('.section');
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const calculatorButton = document.getElementById('calculatorButton');
-            const calculatorModal = document.getElementById('calculatorModal');
-            const closeCalculatorBtn = document.getElementById('closeCalculatorBtn');
+        // Initialize Quill editor
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Start writing your notes here...'
+        });
 
-            // --- Utility Functions ---
-            // Function to generate a unique ID
-            function generateUniqueId() {
-                return '_' + Math.random().toString(36).substr(2, 9);
-            }
+        // Global variables
+        let currentPage = 'dashboard';
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let timetable = JSON.parse(localStorage.getItem('timetable')) || [];
+        let subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+        let resources = JSON.parse(localStorage.getItem('resources')) || [];
+        let reminders = JSON.parse(localStorage.getItem('reminders')) || [];
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        let currentNoteId = null;
+        let timerInterval = null;
+        let timerMode = 'pomodoro';
+        let timerTime = 25 * 60;
+        let isTimerRunning = false;
+        let sessionsCompleted = parseInt(localStorage.getItem('sessionsCompleted')) || 0;
+        let currentCalendarDate = new Date();
+        let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+        let studyTimeThisWeek = parseInt(localStorage.getItem('studyTimeThisWeek')) || 0;
 
-            // Function to reload all data and re-render UI components
-            function reloadAllData() {
-                // Reload individual data sets
-                allNotes = JSON.parse(localStorage.getItem('allNotes')) || [];
-                todos = JSON.parse(localStorage.getItem('todos')) || [];
-                homeworks = JSON.parse(localStorage.getItem('homeworks')) || [];
-                links = JSON.parse(localStorage.getItem('links')) || [];
-                pdfs = JSON.parse(localStorage.getItem('pdfs')) || [];
-                activeNoteId = localStorage.getItem('activeNoteId');
+        // Timer presets
+        const timerPresets = {
+            pomodoro: 25 * 60,
+            'short-break': 5 * 60,
+            'long-break': 15 * 60
+        };
 
-                // Re-render UI components
-                renderNotesList();
-                // If there's an active note, load it, otherwise set default editor content
-                if (activeNoteId) {
-                    loadNoteIntoEditor(activeNoteId);
-                } else if (allNotes.length > 0) {
-                    loadNoteIntoEditor(allNotes[0].id); // Load the first note if no active note
-                } else {
-                    editor.setContents([{ insert: 'Welcome to your Study Hub Notes! Click "New Note" to create one!' }]);
-                    currentNoteTitleDisplay.textContent = 'Not Loaded';
-                }
+        // Initialize the application
+        function initApp() {
+            loadTasks();
+            loadNotes();
+            loadTimetable();
+            loadSubjects();
+            loadResources();
+            loadReminders();
+            loadEvents();
+            updateStats();
+            setupEventListeners();
+            updateActivePage('dashboard');
+            generateCalendar();
+            updateTimerDisplay();
+            checkNotifications();
+            document.getElementById('sessions-count').textContent = sessionsCompleted;
+            
+            // Check for upcoming deadlines every minute
+            setInterval(checkUpcomingDeadlines, 60000);
+        }
 
-                renderPdfs();
-                renderTodos();
-                loadTimetable(); // Make sure timetable is re-rendered correctly
-                renderHomeworks();
-                renderLinks();
-                loadDarkModePreference(); // Re-apply dark mode preference
-                alert('All data reloaded!');
-            }
-
-
-            // --- Dark Mode Functionality ---
-            function loadDarkModePreference() {
-                const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
-                if (isDarkMode) {
-                    document.body.classList.add('dark-mode');
-                } else {
-                    document.body.classList.remove('dark-mode'); // Ensure it's off if disabled
-                }
-            }
-
-            darkModeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-mode');
-                if (document.body.classList.contains('dark-mode')) {
-                    localStorage.setItem('darkMode', 'enabled');
-                } else {
-                    localStorage.setItem('darkMode', 'disabled');
+        // Set up event listeners
+        function setupEventListeners() {
+            // Sidebar navigation
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                if (item.id !== 'dark-mode-toggle') {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = item.getAttribute('data-page');
+                        updateActivePage(page);
+                    });
                 }
             });
 
-            loadDarkModePreference(); // Load preference on start
+            // Dark mode toggle
+            document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
 
-            // --- Navigation Functionality ---
-            function showSection(targetId) {
-                sections.forEach(section => {
-                    section.classList.remove('active');
+            // Task modals
+            document.getElementById('add-task-btn').addEventListener('click', () => {
+                document.getElementById('task-modal').style.display = 'flex';
+            });
+            
+            document.getElementById('add-task-page-btn').addEventListener('click', () => {
+                document.getElementById('task-modal').style.display = 'flex';
+            });
+            
+            document.getElementById('quick-add-task').addEventListener('click', () => {
+                document.getElementById('task-modal').style.display = 'flex';
+            });
+
+            document.querySelector('.modal-close').addEventListener('click', closeModals);
+            document.getElementById('modal-cancel').addEventListener('click', closeModals);
+
+            // Save task
+            document.getElementById('save-task').addEventListener('click', addNewTask);
+
+            // Notes functionality
+            document.getElementById('save-note-btn').addEventListener('click', saveNote);
+            document.getElementById('new-note-btn').addEventListener('click', newNote);
+            document.getElementById('export-note-btn').addEventListener('click', exportNoteAsPDF);
+
+            // Backup functionality
+            document.getElementById('backup-btn').addEventListener('click', backupData);
+            document.getElementById('restore-btn').addEventListener('click', restoreData);
+            document.getElementById('clear-data-btn').addEventListener('click', clearAllData);
+
+            // Page title editing
+            document.getElementById('dashboard-title').addEventListener('blur', function() {
+                localStorage.setItem('dashboardTitle', this.value);
+            });
+
+            // Timetable functionality
+            document.getElementById('add-timetable-btn').addEventListener('click', () => {
+                document.getElementById('timetable-modal').style.display = 'flex';
+            });
+            
+            document.getElementById('timetable-modal-cancel').addEventListener('click', closeModals);
+            document.getElementById('save-timetable-item').addEventListener('click', addTimetableItem);
+
+            // Timer functionality
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    setTimerMode(e.target.getAttribute('data-mode'));
                 });
-                document.getElementById(targetId).classList.add('active');
-
-                navButtons.forEach(button => {
-                    button.classList.remove('active');
-                });
-                document.querySelector(`.nav-button[data-target="${targetId}"]`).classList.add('active');
-            }
-
-            // Set initial active section (Notes)
-            showSection('notesSection');
-
-            navButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetId = button.dataset.target;
-                    showSection(targetId);
-                });
             });
+            
+            document.getElementById('start-timer').addEventListener('click', startTimer);
+            document.getElementById('pause-timer').addEventListener('click', pauseTimer);
+            document.getElementById('reset-timer').addEventListener('click', resetTimer);
 
-
-            // --- Calculator Functionality ---
-            // Ensure modal is hidden on load
-            calculatorModal.style.display = 'none';
-
-            calculatorButton.addEventListener('click', () => {
-                calculatorModal.style.display = 'flex'; // Use flex to center the modal
+            // Calendar navigation
+            document.getElementById('prev-month').addEventListener('click', () => {
+                currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+                generateCalendar();
             });
-
-            closeCalculatorBtn.addEventListener('click', () => {
-                calculatorModal.style.display = 'none';
+            
+            document.getElementById('next-month').addEventListener('click', () => {
+                currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+                generateCalendar();
             });
-
-            window.addEventListener('click', (event) => {
-                if (event.target == calculatorModal) {
-                    calculatorModal.style.display = 'none';
-                }
+            
+            document.getElementById('add-event-btn').addEventListener('click', () => {
+                document.getElementById('event-modal').style.display = 'flex';
             });
+            
+            document.getElementById('event-modal-cancel').addEventListener('click', closeModals);
+            document.getElementById('save-event').addEventListener('click', addEvent);
 
-            const calcDisplay = document.getElementById('calcDisplay');
-            const calcButtons = document.querySelector('.calculator-buttons');
-            let currentInput = '0';
-            let operator = null;
-            let firstOperand = null;
-            let waitingForSecondOperand = false;
+            // Subjects functionality
+            document.getElementById('add-subject-btn').addEventListener('click', () => {
+                document.getElementById('subject-modal').style.display = 'flex';
+            });
+            
+            document.getElementById('subject-modal-cancel').addEventListener('click', closeModals);
+            document.getElementById('save-subject').addEventListener('click', addSubject);
 
-            function updateDisplay() {
-                calcDisplay.value = currentInput;
+            // Resources functionality
+            document.getElementById('add-resource-btn').addEventListener('click', addResource);
+
+            // Reminders functionality
+            document.getElementById('add-reminder-btn').addEventListener('click', addReminder);
+
+            // Notifications button
+            document.getElementById('notifications-btn').addEventListener('click', showNotifications);
+
+            // Load saved page title
+            const savedTitle = localStorage.getItem('dashboardTitle');
+            if (savedTitle) {
+                document.getElementById('dashboard-title').value = savedTitle;
             }
+        }
 
-            function inputDigit(digit) {
-                if (waitingForSecondOperand) {
-                    currentInput = digit;
-                    waitingForSecondOperand = false;
-                } else {
-                    currentInput = currentInput === '0' ? digit : currentInput + digit;
-                }
-                updateDisplay();
-            }
-
-            function inputDecimal(dot) {
-                if (waitingForSecondOperand) { // If starting a new number after an operator, always start with '0.'
-                    currentInput = '0.';
-                    waitingForSecondOperand = false;
-                } else if (!currentInput.includes(dot)) {
-                    currentInput += dot;
-                }
-                updateDisplay();
-            }
-
-            function handleOperator(nextOperator) {
-                const inputValue = parseFloat(currentInput);
-
-                if (operator && waitingForSecondOperand) {
-                    operator = nextOperator;
-                    return;
-                }
-
-                if (firstOperand === null) {
-                    firstOperand = inputValue;
-                } else if (operator) {
-                    const result = operate(firstOperand, inputValue, operator);
-                    currentInput = String(result);
-                    firstOperand = result;
-                }
-
-                waitingForSecondOperand = true;
-                operator = nextOperator;
-                updateDisplay();
-            }
-
-            function operate(num1, num2, op) {
-                if (op === '+') return num1 + num2;
-                if (op === '-') return num1 - num2;
-                if (op === '*') return num1 * num2;
-                if (op === '/') {
-                    if (num2 === 0) {
-                        alert("Cannot divide by zero!");
-                        return 'Error'; // Return a string to indicate error
-                    }
-                    return num1 / num2;
-                }
-                if (op === '%') return (num1 / 100) * num2; // percentage of a number
-                return num2; // Default case
-            }
-
-            function resetCalculator() {
-                currentInput = '0';
-                operator = null;
-                firstOperand = null;
-                waitingForSecondOperand = false;
-                updateDisplay();
-            }
-
-            function backspace() {
-                currentInput = currentInput.slice(0, -1);
-                if (currentInput === '' || currentInput === '-') { // If only '-' left or empty
-                    currentInput = '0';
-                }
-                updateDisplay();
-            }
-
-            calcButtons.addEventListener('click', (event) => {
-                const { target } = event;
-                if (!target.matches('button')) {
-                    return;
-                }
-
-                if (target.classList.contains('number')) {
-                    inputDigit(target.dataset.value);
-                    return;
-                }
-
-                if (target.dataset.value === '.') {
-                    inputDecimal(target.dataset.value);
-                    return;
-                }
-
-                if (target.classList.contains('operator')) {
-                    handleOperator(target.dataset.value);
-                    return;
-                }
-
-                if (target.dataset.action === 'equals') {
-                    if (operator && firstOperand !== null) { // Only calculate if there's an active operation
-                        const result = operate(firstOperand, parseFloat(currentInput), operator);
-                        currentInput = String(result);
-                        firstOperand = null; // Reset firstOperand after equals
-                        operator = null; // Clear operator
-                        waitingForSecondOperand = false; // Allow new calculation to start
-                        updateDisplay();
-                    }
-                    return;
-                }
-
-                if (target.dataset.action === 'clear') {
-                    resetCalculator();
-                    return;
-                }
-
-                if (target.dataset.action === 'backspace') {
-                    backspace();
-                    return;
+        // Update active page
+        function updateActivePage(page) {
+            currentPage = page;
+            
+            // Update sidebar active item
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('active');
                 }
             });
-
-            // Initialize calculator display
-            updateDisplay();
-
-            // --- Notes Section Functionality (Quill.js & LocalStorage for multiple notes) ---
-            const editor = new Quill('#editor', {
-                theme: 'snow',
-                placeholder: 'Start writing your notes here...',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline', 'strike'],
-                        ['blockquote', 'code-block'],
-                        [{ 'header': 1 }, { 'header': 2 }],
-                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                        [{ 'script': 'sub' }, { 'script': 'super' }],
-                        [{ 'indent': '-1' }, { 'indent': '+1' }],
-                        [{ 'direction': 'rtl' }],
-                        [{ 'size': ['small', false, 'large', 'huge'] }],
-                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'font': [] }],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
-                }
+            
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(content => {
+                content.style.display = 'none';
             });
-
-            const createNewNoteBtn = document.getElementById('createNewNoteBtn');
-            const saveCurrentNoteBtn = document.getElementById('saveCurrentNoteBtn');
-            const notesListElement = document.getElementById('notesList');
-            const currentNoteTitleDisplay = document.getElementById('currentNoteTitleDisplay');
-
-            let allNotes = JSON.parse(localStorage.getItem('allNotes')) || [];
-            let activeNoteId = localStorage.getItem('activeNoteId'); // Track which note is currently open
-
-            // Render the list of notes
-            function renderNotesList() {
-                notesListElement.innerHTML = ''; // Clear existing list
-                if (allNotes.length === 0) {
-                    notesListElement.innerHTML = '<p class="placeholder-text">No notes yet. Click \'New Note\' to create one!</p>';
-                    return;
-                }
-
-                allNotes.forEach(note => {
-                    const li = document.createElement('li');
-                    li.className = `note-item ${note.id === activeNoteId ? 'active-note' : ''}`;
-                    li.dataset.noteId = note.id;
-                    li.innerHTML = `
-                        <span class="note-title">${note.title}</span>
-                        <div class="note-actions">
-                            <button class="load-note-btn action-btn small-btn" data-note-id="${note.id}" title="Load Note"><i class="fas fa-folder-open"></i></button>
-                            <button class="delete-note-btn action-btn small-btn delete-btn" data-note-id="${note.id}" title="Delete Note"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                    notesListElement.appendChild(li);
-                });
+            
+            // Show current page
+            document.getElementById(`${page}-page`).style.display = 'flex';
+            
+            // Load page-specific content
+            if (page === 'tasks') {
+                loadAllTasks();
+            } else if (page === 'timetable') {
+                loadTimetable();
+            } else if (page === 'subjects') {
+                loadSubjects();
+            } else if (page === 'resources') {
+                loadResources();
+            } else if (page === 'reminders') {
+                loadReminders();
+            } else if (page === 'progress') {
+                loadProgressCharts();
             }
+        }
 
-            // Load a specific note into the editor
-            function loadNoteIntoEditor(noteId) {
-                const noteToLoad = allNotes.find(note => note.id === noteId);
-                if (noteToLoad) {
-                    // Save the current note before loading a new one if there was an active note
-                    if (activeNoteId && activeNoteId !== noteId) {
-                        const currentNote = allNotes.find(note => note.id === activeNoteId);
-                        if (currentNote) {
-                            currentNote.content = JSON.stringify(editor.getContents());
-                            localStorage.setItem('allNotes', JSON.stringify(allNotes)); // Persist changes
-                        }
-                    }
+        // Toggle Dark Mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            
+            // Save preference to localStorage
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            
+            showNotification('Settings', 'Dark mode ' + (isDarkMode ? 'enabled' : 'disabled'));
+        }
 
-                    editor.setContents(JSON.parse(noteToLoad.content));
-                    currentNoteTitleDisplay.textContent = noteToLoad.title;
-                    activeNoteId = noteId;
-                    localStorage.setItem('activeNoteId', activeNoteId); // Save active note ID
-                    renderNotesList(); // Update active class
-                    // alert(`Note "${noteToLoad.title}" loaded!`); // Visual confirmation - commented for less popups
-                } else {
-                    // If note not found (e.g., deleted), clear editor
-                    editor.setContents([{ insert: 'Note not found. Create a new one.' }]);
-                    currentNoteTitleDisplay.textContent = 'Not Loaded'; // Reset display
-                    activeNoteId = null;
-                    localStorage.removeItem('activeNoteId');
-                    renderNotesList();
-                }
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Close all modals
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // Task functionality
+        function addNewTask() {
+            const title = document.getElementById('task-title').value;
+            const subject = document.getElementById('task-subject').value;
+            const due = document.getElementById('task-due').value;
+            const priority = document.getElementById('task-priority').value;
+            const desc = document.getElementById('task-desc').value;
+            
+            if (!title) {
+                showNotification('Error', 'Please enter a task title', 'warning');
+                return;
             }
+            
+            const newTask = {
+                id: Date.now(),
+                title,
+                subject,
+                due,
+                priority,
+                desc,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            tasks.push(newTask);
+            saveTasks();
+            loadTasks();
+            loadAllTasks();
+            updateStats();
+            closeModals();
+            
+            showNotification('Task Added', '"' + title + '" has been added to your tasks');
+            
+            // Reset form
+            document.getElementById('task-title').value = '';
+            document.getElementById('task-subject').value = '';
+            document.getElementById('task-due').value = '';
+            document.getElementById('task-priority').value = 'medium';
+            document.getElementById('task-desc').value = '';
+        }
 
-            // Handle creating a new note
-            createNewNoteBtn.addEventListener('click', () => {
-                const noteTitle = prompt("Enter a title for your new note:");
-                if (noteTitle && noteTitle.trim() !== "") {
-                    // Save the current note first if one is active
-                    if (activeNoteId) {
-                        const currentNote = allNotes.find(note => note.id === activeNoteId);
-                        if (currentNote) {
-                            currentNote.content = JSON.stringify(editor.getContents());
-                            localStorage.setItem('allNotes', JSON.stringify(allNotes)); // Save changes to allNotes
-                        }
-                    }
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
 
-                    const newNote = {
-                        id: generateUniqueId(),
-                        title: noteTitle.trim(),
-                        content: JSON.stringify([{ insert: 'Start writing your new note here...' }]),
-                        createdAt: new Date().toISOString()
-                    };
-                    allNotes.push(newNote);
-                    localStorage.setItem('allNotes', JSON.stringify(allNotes));
-                    loadNoteIntoEditor(newNote.id); // Load the new note
-                    alert(`New note "${newNote.title}" created!`);
-                } else {
-                    alert("Note title cannot be empty!");
-                }
+        function loadTasks() {
+            const todayTasksContainer = document.getElementById('today-tasks');
+            const upcomingTasksContainer = document.getElementById('upcoming-tasks');
+            
+            // Clear containers
+            todayTasksContainer.innerHTML = '';
+            upcomingTasksContainer.innerHTML = '';
+            
+            // Get today's date and filter tasks
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const todayTasks = tasks.filter(task => {
+                if (task.completed) return false;
+                if (!task.due) return false;
+                
+                const taskDate = new Date(task.due);
+                taskDate.setHours(0, 0, 0, 0);
+                return taskDate.getTime() === today.getTime();
             });
-
-            // Handle saving the current note
-            saveCurrentNoteBtn.addEventListener('click', () => {
-                if (activeNoteId) {
-                    const noteToSave = allNotes.find(note => note.id === activeNoteId);
-                    if (noteToSave) {
-                        noteToSave.content = JSON.stringify(editor.getContents());
-                        localStorage.setItem('allNotes', JSON.stringify(allNotes));
-                        alert(`Note "${noteToSave.title}" saved!`);
-                    }
-                } else {
-                    alert("No note selected. Create a new note first!");
-                }
-            });
-
-            // Handle loading and deleting notes from the list
-            notesListElement.addEventListener('click', (event) => {
-                const target = event.target;
-                // Use closest to ensure click on icon inside button also works
-                const loadBtn = target.closest('.load-note-btn');
-                const deleteBtn = target.closest('.delete-note-btn');
-
-                if (loadBtn) {
-                    const noteId = loadBtn.dataset.noteId;
-                    loadNoteIntoEditor(noteId); // Load the clicked note
-                } else if (deleteBtn) {
-                    const noteId = deleteBtn.dataset.noteId;
-                    const noteTitleToDelete = allNotes.find(note => note.id === noteId)?.title || "this note";
-
-                    if (confirm(`Are you sure you want to delete "${noteTitleToDelete}"?`)) {
-                        allNotes = allNotes.filter(note => note.id !== noteId);
-                        localStorage.setItem('allNotes', JSON.stringify(allNotes));
-                        renderNotesList();
-                        if (activeNoteId === noteId) {
-                            // If the deleted note was active, clear editor and reset activeNoteId
-                            editor.setContents([{ insert: 'Note deleted. Create or load another note.' }]);
-                            currentNoteTitleDisplay.textContent = 'Not Loaded'; // Reset display
-                            activeNoteId = null;
-                            localStorage.removeItem('activeNoteId');
-                        }
-                        alert('Note deleted.');
-                    }
-                }
-            });
-
-            // Initial load of notes list and active note
-            renderNotesList();
-            if (activeNoteId) {
-                loadNoteIntoEditor(activeNoteId);
-            } else if (allNotes.length > 0) {
-                // If no activeNoteId but there are notes, load the first one
-                loadNoteIntoEditor(allNotes[0].id);
+            
+            const upcomingTasks = tasks.filter(task => {
+                if (task.completed) return false;
+                if (!task.due) return false;
+                
+                const taskDate = new Date(task.due);
+                return taskDate > today && taskDate < new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+            }).sort((a, b) => new Date(a.due) - new Date(b.due));
+            
+            // Display today's tasks
+            if (todayTasks.length === 0) {
+                todayTasksContainer.innerHTML = '<p class="empty-state">No tasks for today. Add a task to get started!</p>';
             } else {
-                // If no notes at all, set a default message and title
-                editor.setContents([{ insert: 'Welcome to your Study Hub Notes! Click "New Note" to get started.' }]);
-                currentNoteTitleDisplay.textContent = 'Not Loaded';
-            }
-
-
-            // --- PDF Notes (Base64 in Local Storage - for demonstration, limits apply) ---
-            const pdfUploadInput = document.getElementById('pdfUploadInput');
-            const uploadPdfBtn = document.getElementById('uploadPdfBtn');
-            const pdfList = document.getElementById('pdfList');
-
-            let pdfs = JSON.parse(localStorage.getItem('pdfs')) || [];
-
-            function renderPdfs() {
-                pdfList.innerHTML = '';
-                if (pdfs.length === 0) {
-                    pdfList.innerHTML = '<p class="placeholder-text">No PDFs uploaded yet.</p>';
-                    return;
-                }
-                pdfs.forEach((pdf, index) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <span>${pdf.name}</span>
-                        <div class="pdf-actions">
-                            <button class="view-pdf-btn action-btn small-btn" data-index="${index}"><i class="fas fa-eye"></i> View</button>
-                            <button class="delete-pdf-btn action-btn small-btn delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
-                        </div>
-                    `;
-                    pdfList.appendChild(li);
+                todayTasks.forEach(task => {
+                    todayTasksContainer.appendChild(createTaskElement(task));
                 });
             }
-
-            uploadPdfBtn.addEventListener('click', () => {
-                const file = pdfUploadInput.files[0];
-                if (file && file.type === 'application/pdf') {
-                    if (file.size > 5 * 1024 * 1024) { // Warning for files > 5MB
-                        alert('Warning: This PDF is very large. Storing large files in local storage may cause performance issues or exceed limits. For persistent storage, a backend server is recommended.');
-                    }
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const base64Pdf = e.target.result;
-                        pdfs.push({ name: file.name, data: base64Pdf });
-                        localStorage.setItem('pdfs', JSON.stringify(pdfs));
-                        renderPdfs();
-                        pdfUploadInput.value = ''; // Clear file input
-                        alert('PDF uploaded (to local storage)!');
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    alert('Please select a PDF file.');
-                }
-            });
-
-            pdfList.addEventListener('click', (event) => {
-                if (event.target.classList.contains('view-pdf-btn') || event.target.closest('.view-pdf-btn')) {
-                    const index = event.target.dataset.index || event.target.closest('.view-pdf-btn').dataset.index;
-                    const pdfData = pdfs[index].data;
-                    const newWindow = window.open();
-                    newWindow.document.write(`<iframe src="${pdfData}" style="width:100%; height:100vh;" frameborder="0"></iframe>`);
-                    newWindow.document.close();
-                } else if (event.target.classList.contains('delete-pdf-btn') || event.target.closest('.delete-pdf-btn')) {
-                    const index = event.target.dataset.index || event.target.closest('.delete-pdf-btn').dataset.index;
-                    if (confirm(`Are you sure you want to delete "${pdfs[index].name}"?`)) {
-                        pdfs.splice(index, 1);
-                        localStorage.setItem('pdfs', JSON.stringify(pdfs));
-                        renderPdfs();
-                        alert('PDF deleted.');
-                    }
-                }
-            });
-
-            renderPdfs(); // Render PDFs on page load
-
-            // --- To-Do List Functionality (Local Storage) ---
-            const todoInput = document.getElementById('todoInput');
-            const addTodoItemBtn = document.getElementById('addTodoItemBtn');
-            const todoList = document.getElementById('todoList');
-
-            let todos = JSON.parse(localStorage.getItem('todos')) || [];
-
-            function renderTodos() {
-                todoList.innerHTML = '';
-                if (todos.length === 0) {
-                    todoList.innerHTML = '<p class="placeholder-text">No tasks yet! Add one to get started.</p>';
-                    return;
-                }
-                todos.forEach((todo, index) => {
-                    const li = document.createElement('li');
-                    li.className = todo.completed ? 'completed' : '';
-                    li.innerHTML = `
-                        <span class="todo-text">${todo.text}</span>
-                        <div class="todo-actions">
-                            <button class="complete-todo-btn action-btn small-btn" data-index="${index}"><i class="fas fa-check"></i></button>
-                            <button class="delete-todo-btn action-btn small-btn delete-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                    todoList.appendChild(li);
+            
+            // Display upcoming tasks
+            if (upcomingTasks.length === 0) {
+                upcomingTasksContainer.innerHTML = '<p class="empty-state">No upcoming deadlines.</p>';
+            } else {
+                upcomingTasks.forEach(task => {
+                    upcomingTasksContainer.appendChild(createTaskElement(task));
                 });
             }
+        }
 
-            addTodoItemBtn.addEventListener('click', () => {
-                const taskText = todoInput.value.trim();
-                if (taskText) {
-                    todos.push({ text: taskText, completed: false });
-                    localStorage.setItem('todos', JSON.stringify(todos));
-                    todoInput.value = '';
-                    renderTodos();
-                }
-            });
-
-            todoList.addEventListener('click', (event) => {
-                if (event.target.classList.contains('delete-todo-btn') || event.target.closest('.delete-todo-btn')) {
-                    const index = event.target.dataset.index || event.target.closest('.delete-todo-btn').dataset.index;
-                    todos.splice(index, 1);
-                    localStorage.setItem('todos', JSON.stringify(todos));
-                    renderTodos();
-                } else if (event.target.classList.contains('complete-todo-btn') || event.target.closest('.complete-todo-btn')) {
-                    const index = event.target.dataset.index || event.target.closest('.complete-todo-btn').dataset.index;
-                    todos[index].completed = !todos[index].completed;
-                    localStorage.setItem('todos', JSON.stringify(todos));
-                    renderTodos();
-                }
-            });
-
-            renderTodos(); // Render todos on page load
-
-            // --- Timetable Section Functionality (Local Storage) ---
-            const timetableTableBody = document.querySelector('.timetable-table tbody');
-            const saveTimetableBtn = document.getElementById('saveTimetableBtn');
-
-            // Default timetable structure (if no data in local storage)
-            const defaultTimetableRows = [
-                { time: '9:00 AM', classes: ['', '', '', '', ''] },
-                { time: '10:00 AM', classes: ['', '', '', '', ''] },
-                { time: '11:00 AM', classes: ['', '', '', '', ''] },
-                { time: '12:00 PM', classes: ['', '', '', '', ''] },
-                { time: '1:00 PM', classes: ['', '', '', '', ''] },
-                { time: '2:00 PM', classes: ['', '', '', '', ''] },
-                { time: '3:00 PM', classes: ['', '', '', '', ''] },
-            ];
-
-            // Render timetable from data
-            function renderTimetable(data) {
-                timetableTableBody.innerHTML = ''; // Clear existing rows
-                data.forEach(rowData => {
-                    const tr = document.createElement('tr');
-                    // Make the time cell contenteditable and use data-placeholder
-                    const timeContent = rowData.time ? rowData.time : '';
-                    tr.innerHTML = `<td contenteditable="true" data-placeholder="Time">${timeContent}</td>` +
-                                   rowData.classes.map(cls => `<td contenteditable="true" data-placeholder="Add class">${cls}</td>`).join('');
-                    timetableTableBody.appendChild(tr);
-                });
-                applyTimetablePlaceholders(); // Apply placeholders after rendering
+        function loadAllTasks() {
+            const allTasksContainer = document.getElementById('all-tasks');
+            allTasksContainer.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                allTasksContainer.innerHTML = '<p class="empty-state">No tasks yet. Add a task to get started!</p>';
+                return;
             }
-
-            // Function to apply/update placeholders based on cell content
-            function applyTimetablePlaceholders() {
-                document.querySelectorAll('.timetable-table td[contenteditable="true"]').forEach(cell => {
-                    if (cell.textContent.trim() === '') {
-                        cell.classList.add('empty-editable-cell');
-                    } else {
-                        cell.classList.remove('empty-editable-cell');
-                    }
-                });
-            }
-
-            // Load timetable data
-            function loadTimetable() {
-                const savedTimetable = localStorage.getItem('timetable');
-                if (savedTimetable) {
-                    try {
-                        const parsedData = JSON.parse(savedTimetable);
-                        renderTimetable(parsedData);
-                    } catch (e) {
-                        console.error("Error parsing saved timetable data, loading default:", e);
-                        renderTimetable(defaultTimetableRows); // Fallback to default
-                    }
-                } else {
-                    renderTimetable(defaultTimetableRows); // Load default if nothing saved
+            
+            // Sort tasks: incomplete first, then by due date
+            const sortedTasks = [...tasks].sort((a, b) => {
+                if (a.completed !== b.completed) {
+                    return a.completed ? 1 : -1;
                 }
-            }
-
-            // Save timetable data
-            saveTimetableBtn.addEventListener('click', () => {
-                const timetableData = [];
-                timetableTableBody.querySelectorAll('tr').forEach(row => {
-                    // Select all contenteditable cells in the row
-                    const allCellsInRow = Array.from(row.querySelectorAll('td[contenteditable="true"]'));
-                    if (allCellsInRow.length > 0) {
-                        const time = allCellsInRow[0].textContent.trim(); // First cell is time
-                        const classes = allCellsInRow.slice(1).map(cell => cell.textContent.trim()); // Rest are classes
-                        timetableData.push({ time: time, classes: classes });
-                    }
-                });
-                localStorage.setItem('timetable', JSON.stringify(timetableData));
-                alert('Timetable saved to local storage!');
-                applyTimetablePlaceholders(); // Re-apply placeholders after save (in case cells were cleared)
+                
+                if (a.due && b.due) {
+                    return new Date(a.due) - new Date(b.due);
+                }
+                
+                return 0;
             });
-
-            // Add an input event listener to manage placeholder visibility as user types
-            timetableTableBody.addEventListener('input', (event) => {
-                const target = event.target;
-                if (target.matches('td[contenteditable="true"]')) {
-                    if (target.textContent.trim() !== '') {
-                        target.classList.remove('empty-editable-cell');
-                    } else {
-                        target.classList.add('empty-editable-cell');
-                    }
-                }
+            
+            sortedTasks.forEach(task => {
+                allTasksContainer.appendChild(createTaskElement(task, true));
             });
+        }
 
-            loadTimetable(); // Initial load of timetable on page load
-
-
-            // --- Homework Section Functionality (Local Storage) ---
-            const homeworkInput = document.getElementById('homeworkInput');
-            const homeworkDueDate = document.getElementById('homeworkDueDate');
-            const addHomeworkItemBtn = document.getElementById('addHomeworkItemBtn');
-            const homeworkList = document.getElementById('homeworkList');
-
-            let homeworks = JSON.parse(localStorage.getItem('homeworks')) || [];
-
-            function renderHomeworks() {
-                homeworkList.innerHTML = '';
-                if (homeworks.length === 0) {
-                    homeworkList.innerHTML = '<p class="placeholder-text">No homework assigned yet! Add one to get started.</p>';
-                    return;
-                }
-                homeworks.forEach((hw, index) => {
-                    const li = document.createElement('li');
-                    li.className = hw.completed ? 'completed' : '';
-                    li.innerHTML = `
-                        <span class="homework-text">${hw.text} (Due: ${hw.dueDate})</span>
-                        <div class="homework-actions">
-                            <button class="complete-homework-btn action-btn small-btn" data-index="${index}"><i class="fas fa-check"></i></button>
-                            <button class="delete-homework-btn action-btn small-btn delete-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                    homeworkList.appendChild(li);
+        function createTaskElement(task, showActions = false) {
+            const taskElement = document.createElement('div');
+            taskElement.className = 'task-item';
+            taskElement.dataset.id = task.id;
+            
+            if (task.completed) {
+                taskElement.style.opacity = '0.7';
+            }
+            
+            const formattedDate = task.due ? new Date(task.due).toLocaleDateString() + ' ' + new Date(task.due).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'No deadline';
+            
+            taskElement.innerHTML = `
+                <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                <div class="task-content">
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-desc">${task.desc || ''} • Due: ${formattedDate}</div>
+                    <div class="task-tags">
+                        <span class="tag tag-${task.priority}">${task.priority}</span>
+                        ${task.subject ? `<span class="tag tag-study">${task.subject}</span>` : ''}
+                        ${task.completed ? `<span class="tag tag-completed">completed</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (showActions) {
+                const actions = document.createElement('div');
+                actions.innerHTML = `
+                    <button class="btn btn-icon edit-task" data-id="${task.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-icon delete-task" data-id="${task.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                taskElement.appendChild(actions);
+                
+                // Add event listeners to action buttons
+                taskElement.querySelector('.edit-task').addEventListener('click', () => {
+                    editTask(task.id);
+                });
+                
+                taskElement.querySelector('.delete-task').addEventListener('click', () => {
+                    deleteTask(task.id);
                 });
             }
-
-            addHomeworkItemBtn.addEventListener('click', () => {
-                const hwText = homeworkInput.value.trim();
-                const hwDue = homeworkDueDate.value;
-                if (hwText && hwDue) {
-                    homeworks.push({ text: hwText, dueDate: hwDue, completed: false });
-                    localStorage.setItem('homeworks', JSON.stringify(homeworks));
-                    homeworkInput.value = '';
-                    homeworkDueDate.value = '';
-                    renderHomeworks();
-                } else {
-                    alert('Please enter both homework description and due date.');
-                }
+            
+            // Add event listener to checkbox
+            const checkbox = taskElement.querySelector('.task-checkbox');
+            checkbox.addEventListener('change', () => {
+                toggleTaskCompleted(task.id);
             });
+            
+            return taskElement;
+        }
 
-            homeworkList.addEventListener('click', (event) => {
-                if (event.target.classList.contains('delete-homework-btn') || event.target.closest('.delete-homework-btn')) {
-                    const index = event.target.dataset.index || event.target.closest('.delete-homework-btn').dataset.index;
-                    homeworks.splice(index, 1);
-                    localStorage.setItem('homeworks', JSON.stringify(homeworks));
-                    renderHomeworks();
-                } else if (event.target.classList.contains('complete-homework-btn') || event.target.closest('.complete-homework-btn')) {
-                    const index = event.target.dataset.index || event.target.closest('.complete-homework-btn').dataset.index;
-                    homeworks[index].completed = !homeworks[index].completed;
-                    localStorage.setItem('homeworks', JSON.stringify(homeworks));
-                    renderHomeworks();
-                }
-            });
-
-            renderHomeworks(); // Render homeworks on page load
-
-            // --- Links Section Functionality (Local Storage) ---
-            const linkNameInput = document.getElementById('linkNameInput');
-            const linkUrlInput = document.getElementById('linkUrlInput');
-            const addLinkItemBtn = document.getElementById('addLinkItemBtn');
-            const linksList = document.getElementById('linksList');
-
-            let links = JSON.parse(localStorage.getItem('links')) || [];
-
-            function renderLinks() {
-                linksList.innerHTML = '';
-                if (links.length === 0) {
-                    linksList.innerHTML = '<p class="placeholder-text">No links yet! Add one to get started.</p>';
-                    return;
-                }
-                links.forEach((link, index) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <a href="${link.url}" target="_blank">${link.name}</a>
-                        <button class="delete-link-btn action-btn small-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
-                    `;
-                    linksList.appendChild(li);
-                });
+        function toggleTaskCompleted(taskId) {
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+            if (taskIndex !== -1) {
+                tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                saveTasks();
+                loadTasks();
+                loadAllTasks();
+                updateStats();
+                
+                showNotification('Task Updated', '"' + tasks[taskIndex].title + '" marked as ' + (tasks[taskIndex].completed ? 'completed' : 'incomplete'));
             }
+        }
 
-            addLinkItemBtn.addEventListener('click', () => {
-                const linkName = linkNameInput.value.trim();
-                const linkUrl = linkUrlInput.value.trim();
-                if (linkName && linkUrl) {
-                    try {
-                        new URL(linkUrl); // Validate URL
-                        links.push({ name: linkName, url: linkUrl });
-                        localStorage.setItem('links', JSON.stringify(links));
-                        linkNameInput.value = '';
-                        linkUrlInput.value = '';
-                        renderLinks();
-                    } catch (e) {
-                        alert('Please enter a valid URL.');
-                    }
-                } else {
-                    alert('Please enter both link name and URL.');
+        function editTask(taskId) {
+            // Implementation for editing tasks
+            showNotification('Info', 'Edit feature coming soon!', 'info');
+        }
+
+        function deleteTask(taskId) {
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+            if (taskIndex !== -1) {
+                const taskTitle = tasks[taskIndex].title;
+                if (confirm('Are you sure you want to delete the task "' + taskTitle + '"?')) {
+                    tasks.splice(taskIndex, 1);
+                    saveTasks();
+                    loadTasks();
+                    loadAllTasks();
+                    updateStats();
+                    
+                    showNotification('Task Deleted', '"' + taskTitle + '" has been removed');
                 }
+            }
+        }
+
+        function updateStats() {
+            const pendingTasks = tasks.filter(task => !task.completed).length;
+            const completedTasks = tasks.filter(task => task.completed).length;
+            const upcomingExams = tasks.filter(task => 
+                !task.completed && 
+                task.priority === 'high' && 
+                task.due && 
+                new Date(task.due) > new Date()
+            ).length;
+            
+            document.getElementById('pending-tasks').textContent = pendingTasks;
+            document.getElementById('completed-tasks').textContent = completedTasks;
+            document.getElementById('upcoming-exams').textContent = upcomingExams;
+            document.getElementById('notes-count').textContent = notes.length;
+            document.getElementById('subjects-count').textContent = subjects.length;
+            
+            // Update study time
+            document.getElementById('study-time').textContent = studyTimeThisWeek + 'h';
+            
+            // Update progress content
+            const progressContent = document.getElementById('progress-content');
+            progressContent.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                progressContent.innerHTML = '<p class="empty-state">Track your study progress here.</p>';
+                return;
+            }
+            
+            const completionRate = Math.round((completedTasks / tasks.length) * 100);
+            
+            const progressHTML = `
+                <p>Overall Completion: ${completionRate}%</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${completionRate}%"></div>
+                </div>
+                <p>${completedTasks} of ${tasks.length} tasks completed</p>
+            `;
+            
+            progressContent.innerHTML = progressHTML;
+            
+            // Update weekly goal
+            const goalProgress = Math.min(Math.round((studyTimeThisWeek / 20) * 100), 100);
+            document.getElementById('goal-progress').textContent = goalProgress + '%';
+            document.getElementById('goal-progress-bar').style.width = goalProgress + '%';
+            document.getElementById('goal-hours').textContent = studyTimeThisWeek;
+            
+            // Load recent notes
+            loadRecentNotes();
+        }
+
+        function loadRecentNotes() {
+            const recentNotesContainer = document.getElementById('recent-notes');
+            recentNotesContainer.innerHTML = '';
+            
+            if (notes.length === 0) {
+                recentNotesContainer.innerHTML = '<p class="empty-state">No notes yet. Create your first note!</p>';
+                return;
+            }
+            
+            // Sort notes by updated date (newest first)
+            const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 3);
+            
+            sortedNotes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'task-item';
+                noteElement.innerHTML = `
+                    <div class="task-content">
+                        <div class="task-title">${note.title}</div>
+                        <div class="task-desc">Subject: ${note.subject || 'Not specified'} • Updated: ${new Date(note.updatedAt).toLocaleDateString()}</div>
+                    </div>
+                `;
+                
+                recentNotesContainer.appendChild(noteElement);
             });
+        }
 
-            linksList.addEventListener('click', (event) => {
-                if (event.target.classList.contains('delete-link-btn') || event.target.closest('.delete-link-btn')) {
-                    const index = event.target.dataset.index || event.target.closest('.delete-link-btn').dataset.index;
-                    links.splice(index, 1);
-                    localStorage.setItem('links', JSON.stringify(links));
-                    renderLinks();
+        // Notes functionality
+        function saveNote() {
+            const title = document.getElementById('notes-title').value || 'Untitled Note';
+            const subject = document.getElementById('note-subject').value;
+            const content = quill.root.innerHTML;
+            
+            if (!content || content === '<p><br></p>') {
+                showNotification('Error', 'Note content cannot be empty', 'warning');
+                return;
+            }
+            
+            const noteData = {
+                id: currentNoteId || Date.now(),
+                title,
+                subject,
+                content,
+                createdAt: currentNoteId ? notes.find(n => n.id === currentNoteId).createdAt : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            if (currentNoteId) {
+                // Update existing note
+                const noteIndex = notes.findIndex(note => note.id === currentNoteId);
+                if (noteIndex !== -1) {
+                    notes[noteIndex] = noteData;
+                    showNotification('Note Updated', '"' + title + '" has been updated');
                 }
+            } else {
+                // Add new note
+                notes.push(noteData);
+                showNotification('Note Saved', '"' + title + '" has been created');
+            }
+            
+            saveNotes();
+            loadNotes();
+            updateStats();
+        }
+
+        function newNote() {
+            currentNoteId = null;
+            document.getElementById('notes-title').value = '';
+            document.getElementById('note-subject').value = '';
+            quill.setText('');
+        }
+
+        function loadNotes() {
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '';
+            
+            if (notes.length === 0) {
+                notesList.innerHTML = '<p class="empty-state">No notes yet. Create your first note!</p>';
+                return;
+            }
+            
+            // Sort notes by updated date (newest first)
+            const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+            
+            sortedNotes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'task-item';
+                noteElement.innerHTML = `
+                    <div class="task-content">
+                        <div class="task-title">${note.title}</div>
+                        <div class="task-desc">Subject: ${note.subject || 'Not specified'} • Updated: ${new Date(note.updatedAt).toLocaleDateString()}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-icon edit-note" data-id="${note.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-icon delete-note" data-id="${note.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                notesList.appendChild(noteElement);
             });
-
-            renderLinks(); // Render links on page load
-
-            // --- Backup and Restore Functionality ---
-            const exportDataBtn = document.getElementById('exportDataBtn');
-            const importFileInput = document.getElementById('importFileInput');
-            const importDataBtn = document.getElementById('importDataBtn');
-
-            exportDataBtn.addEventListener('click', () => {
-                const allAppData = {
-                    allNotes: JSON.parse(localStorage.getItem('allNotes')),
-                    activeNoteId: localStorage.getItem('activeNoteId'),
-                    todos: JSON.parse(localStorage.getItem('todos')),
-                    timetable: JSON.parse(localStorage.getItem('timetable')),
-                    homeworks: JSON.parse(localStorage.getItem('homeworks')),
-                    links: JSON.parse(localStorage.getItem('links')),
-                    pdfs: JSON.parse(localStorage.getItem('pdfs')),
-                    darkMode: localStorage.getItem('darkMode')
-                };
-
-                const dataStr = JSON.stringify(allAppData, null, 2); // Pretty print JSON
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `study_hub_backup_${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                alert('Data exported successfully!');
+            
+            // Add event listeners to note buttons
+            document.querySelectorAll('.edit-note').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const noteId = parseInt(btn.getAttribute('data-id'));
+                    loadNoteForEditing(noteId);
+                });
             });
+            
+            document.querySelectorAll('.delete-note').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const noteId = parseInt(btn.getAttribute('data-id'));
+                    deleteNote(noteId);
+                });
+            });
+        }
 
-            importDataBtn.addEventListener('click', () => {
-                const file = importFileInput.files[0];
-                if (!file) {
-                    alert('Please select a JSON backup file to import.');
-                    return;
+        function loadNoteForEditing(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                currentNoteId = noteId;
+                document.getElementById('notes-title').value = note.title;
+                document.getElementById('note-subject').value = note.subject || '';
+                quill.root.innerHTML = note.content;
+                
+                // Scroll to editor
+                document.getElementById('editor').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                const noteIndex = notes.findIndex(note => note.id === noteId);
+                const noteTitle = notes[noteIndex].title;
+                
+                notes = notes.filter(note => note.id !== noteId);
+                saveNotes();
+                loadNotes();
+                
+                if (currentNoteId === noteId) {
+                    newNote();
                 }
+                
+                showNotification('Note Deleted', '"' + noteTitle + '" has been removed');
+            }
+        }
 
-                if (file.type !== 'application/json') {
-                    alert('Invalid file type. Please select a JSON file.');
-                    return;
-                }
+        function saveNotes() {
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
 
-                if (!confirm('Importing data will OVERWRITE all your current Study Hub data. Are you sure you want to proceed?')) {
-                    return;
-                }
+        async function exportNoteAsPDF() {
+            const title = document.getElementById('notes-title').value || 'Untitled Note';
+            const subject = document.getElementById('note-subject').value;
+            
+            if (!quill.getText().trim()) {
+                showNotification('Error', 'Note content cannot be empty', 'warning');
+                return;
+            }
+            
+            showNotification('Exporting', 'Preparing PDF download...', 'info');
+            
+            // Use html2canvas and jsPDF for PDF generation
+            const { jsPDF } = window.jspdf;
+            
+            // Create a temporary container for the note content
+            const printContainer = document.createElement('div');
+            printContainer.style.padding = '20px';
+            printContainer.style.width = '800px';
+            printContainer.style.background = 'white';
+            printContainer.style.color = 'black';
+            printContainer.innerHTML = `
+                <h1>${title}</h1>
+                <div>Subject: ${subject || 'Not specified'}</div>
+                <div>Date: ${new Date().toLocaleDateString()}</div>
+                <hr>
+                ${quill.root.innerHTML}
+            `;
+            
+            document.body.appendChild(printContainer);
+            
+            try {
+                const canvas = await html2canvas(printContainer);
+                document.body.removeChild(printContainer);
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                const imgX = (pdfWidth - imgWidth * ratio) / 2;
+                const imgY = 10;
+                
+                pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+                pdf.save(`${title.replace(/\s+/g, '_')}.pdf`);
+                
+                showNotification('Exported', 'Note has been exported as PDF');
+            } catch (error) {
+                document.body.removeChild(printContainer);
+                showNotification('Error', 'Failed to export PDF', 'warning');
+                console.error(error);
+            }
+        }
 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
+        // Timetable functionality
+        function addTimetableItem() {
+            const title = document.getElementById('timetable-title').value;
+            const day = document.getElementById('timetable-day').value;
+            const start = document.getElementById('timetable-start').value;
+            const end = document.getElementById('timetable-end').value;
+            const location = document.getElementById('timetable-location').value;
+            
+            if (!title || !start || !end) {
+                showNotification('Error', 'Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            const newItem = {
+                id: Date.now(),
+                title,
+                day,
+                start,
+                end,
+                location,
+                color: getRandomColor()
+            };
+            
+            timetable.push(newItem);
+            saveTimetable();
+            loadTimetable();
+            closeModals();
+            
+            showNotification('Schedule Updated', '"' + title + '" added to your timetable');
+            
+            // Reset form
+            document.getElementById('timetable-title').value = '';
+            document.getElementById('timetable-day').value = 'monday';
+            document.getElementById('timetable-start').value = '';
+            document.getElementById('timetable-end').value = '';
+            document.getElementById('timetable-location').value = '';
+        }
 
-                        // Basic validation to ensure it's a valid backup structure
-                        if (importedData && typeof importedData === 'object' &&
-                            importedData.allNotes !== undefined &&
-                            importedData.todos !== undefined &&
-                            importedData.timetable !== undefined) {
+        function saveTimetable() {
+            localStorage.setItem('timetable', JSON.stringify(timetable));
+        }
 
-                            localStorage.setItem('allNotes', JSON.stringify(importedData.allNotes));
-                            if (importedData.activeNoteId !== undefined) {
-                                localStorage.setItem('activeNoteId', importedData.activeNoteId);
-                            } else {
-                                localStorage.removeItem('activeNoteId');
-                            }
-                            localStorage.setItem('todos', JSON.stringify(importedData.todos));
-                            localStorage.setItem('timetable', JSON.stringify(importedData.timetable));
-                            localStorage.setItem('homeworks', JSON.stringify(importedData.homeworks));
-                            localStorage.setItem('links', JSON.stringify(importedData.links));
-                            localStorage.setItem('pdfs', JSON.stringify(importedData.pdfs));
-                            if (importedData.darkMode !== undefined) {
-                                localStorage.setItem('darkMode', importedData.darkMode);
-                            } else {
-                                 localStorage.removeItem('darkMode'); // Clear if not in backup
-                            }
-
-                            reloadAllData(); // Re-initialize all UI components with new data
-                            alert('Data imported successfully!');
-
-                        } else {
-                            alert('Invalid backup file format. Please select a valid Study Hub backup JSON.');
+        function loadTimetable() {
+            const timetableBody = document.getElementById('timetable-body');
+            timetableBody.innerHTML = '';
+            
+            // Generate time slots (8 AM to 8 PM)
+            const timeSlots = [];
+            for (let hour = 8; hour <= 20; hour++) {
+                timeSlots.push(`${hour}:00`);
+            }
+            
+            // Create rows for each time slot
+            timeSlots.forEach(time => {
+                const row = document.createElement('tr');
+                
+                // Time cell
+                const timeCell = document.createElement('td');
+                timeCell.textContent = time;
+                timeCell.style.fontWeight = '600';
+                row.appendChild(timeCell);
+                
+                // Day cells
+                const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                days.forEach(day => {
+                    const cell = document.createElement('td');
+                    
+                    // Find items for this day and time
+                    const items = timetable.filter(item => {
+                        return item.day === day && 
+                               item.start <= time && 
+                               item.end >= time;
+                    });
+                    
+                    // If this is the start time of an item, display it
+                    items.forEach(item => {
+                        if (item.start === time) {
+                            const itemElement = document.createElement('div');
+                            itemElement.className = 'time-slot';
+                            itemElement.style.backgroundColor = item.color;
+                            itemElement.innerHTML = `
+                                <strong>${item.title}</strong>
+                                <div>${item.start} - ${item.end}</div>
+                                ${item.location ? `<div>${item.location}</div>` : ''}
+                            `;
+                            itemElement.addEventListener('click', () => {
+                                editTimetableItem(item.id);
+                            });
+                            cell.appendChild(itemElement);
                         }
-                    } catch (error) {
-                        console.error('Error parsing or importing data:', error);
-                        alert('An error occurred during data import. Please check the file format.');
-                    }
-                };
-                reader.readAsText(file);
+                    });
+                    
+                    // Add click event to add new item
+                    cell.addEventListener('click', (e) => {
+                        if (e.target === cell) {
+                            document.getElementById('timetable-modal').style.display = 'flex';
+                            document.getElementById('timetable-day').value = day;
+                            document.getElementById('timetable-start').value = time;
+                            
+                            // Calculate end time (1 hour later by default)
+                            const [hours, minutes] = time.split(':');
+                            const endTime = new Date();
+                            endTime.setHours(parseInt(hours) + 1);
+                            endTime.setMinutes(parseInt(minutes));
+                            document.getElementById('timetable-end').value = `${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`;
+                        }
+                    });
+                    
+                    row.appendChild(cell);
+                });
+                
+                timetableBody.appendChild(row);
             });
+        }
+
+        function editTimetableItem(itemId) {
+            const itemIndex = timetable.findIndex(item => item.id === itemId);
+            if (itemIndex !== -1) {
+                const item = timetable[itemIndex];
+                
+                // Populate the modal with item data
+                document.getElementById('timetable-title').value = item.title;
+                document.getElementById('timetable-day').value = item.day;
+                document.getElementById('timetable-start').value = item.start;
+                document.getElementById('timetable-end').value = item.end;
+                document.getElementById('timetable-location').value = item.location || '';
+                
+                // Show the modal
+                document.getElementById('timetable-modal').style.display = 'flex';
+                
+                // Change save button to update
+                const saveButton = document.getElementById('save-timetable-item');
+                saveButton.textContent = 'Update Item';
+                saveButton.onclick = function() {
+                    // Update the item
+                    timetable[itemIndex].title = document.getElementById('timetable-title').value;
+                    timetable[itemIndex].day = document.getElementById('timetable-day').value;
+                    timetable[itemIndex].start = document.getElementById('timetable-start').value;
+                    timetable[itemIndex].end = document.getElementById('timetable-end').value;
+                    timetable[itemIndex].location = document.getElementById('timetable-location').value;
+                    
+                    saveTimetable();
+                    loadTimetable();
+                    closeModals();
+                    
+                    // Reset button text
+                    saveButton.textContent = 'Add to Schedule';
+                    saveButton.onclick = addTimetableItem;
+                    
+                    showNotification('Schedule Updated', '"' + item.title + '" has been updated');
+                };
+            }
+        }
+
+        function getRandomColor() {
+            const colors = [
+                '#c9daff', '#e0d6ff', '#cceecd', '#ffecc9', '#ffccc9',
+                '#d4e6f1', '#d6eaf8', '#d1f2eb', '#fdebd0', '#fadbd8'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Timer functionality
+        function setTimerMode(mode) {
+            timerMode = mode;
+            timerTime = timerPresets[mode];
+            
+            // Update active button
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-mode') === mode) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            updateTimerDisplay();
+            resetTimer();
+        }
+
+        function startTimer() {
+            if (isTimerRunning) return;
+            
+            isTimerRunning = true;
+            timerInterval = setInterval(() => {
+                timerTime--;
+                updateTimerDisplay();
+                
+                if (timerTime <= 0) {
+                    clearInterval(timerInterval);
+                    isTimerRunning = false;
+                    
+                    // Play sound
+                    const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                    audio.play().catch(() => {});
+                    
+                    // Show notification
+                    if (timerMode === 'pomodoro') {
+                        sessionsCompleted++;
+                        studyTimeThisWeek += 0.5; // 25 minutes = 0.5 hours
+                        localStorage.setItem('sessionsCompleted', sessionsCompleted);
+                        localStorage.setItem('studyTimeThisWeek', studyTimeThisWeek);
+                        document.getElementById('sessions-count').textContent = sessionsCompleted;
+                        updateStats();
+                        
+                        showNotification('Pomodoro Completed', 'Time for a break! Sessions completed: ' + sessionsCompleted, 'success');
+                        
+                        // Auto-start break
+                        setTimerMode('short-break');
+                        startTimer();
+                    } else {
+                        showNotification('Break Completed', 'Ready for another pomodoro?', 'info');
+                    }
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerTime = timerPresets[timerMode];
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerTime / 60);
+            const seconds = timerTime % 60;
+            document.getElementById('timer-display').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Calendar functionality
+        function generateCalendar() {
+            const calendarDays = document.getElementById('calendar-days');
+            calendarDays.innerHTML = '';
+            
+            // Set month title
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthName = monthNames[currentCalendarDate.getMonth()];
+            const year = currentCalendarDate.getFullYear();
+            document.getElementById('calendar-month').textContent = `${monthName} ${year}`;
+            
+            // Create day headers
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day header';
+                dayHeader.textContent = day;
+                calendarDays.appendChild(dayHeader);
+            });
+            
+            // Get first day of month and total days
+            const firstDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 1).getDay();
+            const daysInMonth = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 0).getDate();
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-day';
+                calendarDays.appendChild(emptyCell);
+            }
+            
+            // Add cells for each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayCell.appendChild(dayNumber);
+                
+                // Check if there are any tasks or events on this day
+                const currentDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), day);
+                const tasksOnDay = tasks.filter(task => {
+                    if (!task.due) return false;
+                    const taskDate = new Date(task.due);
+                    return taskDate.toDateString() === currentDate.toDateString();
+                });
+                
+                const eventsOnDay = events.filter(event => {
+                    if (!event.date) return false;
+                    const eventDate = new Date(event.date);
+                    return eventDate.toDateString() === currentDate.toDateString();
+                });
+                
+                tasksOnDay.forEach(task => {
+                    const event = document.createElement('div');
+                    event.className = 'calendar-event';
+                    event.textContent = task.title;
+                    event.style.backgroundColor = getPriorityColor(task.priority);
+                    dayCell.appendChild(event);
+                });
+                
+                eventsOnDay.forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = 'calendar-event';
+                    eventElement.textContent = event.title;
+                    eventElement.style.backgroundColor = '#cceecd';
+                    dayCell.appendChild(eventElement);
+                });
+                
+                // Add click event to add new event
+                dayCell.addEventListener('click', (e) => {
+                    if (e.target === dayCell || e.target.classList.contains('day-number')) {
+                        document.getElementById('event-modal').style.display = 'flex';
+                        document.getElementById('event-date').value = `${currentCalendarDate.getFullYear()}-${(currentCalendarDate.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                    }
+                });
+                
+                calendarDays.appendChild(dayCell);
+            }
+        }
+
+        function getPriorityColor(priority) {
+            switch(priority) {
+                case 'high': return '#ffccc9';
+                case 'medium': return '#ffecc9';
+                case 'low': return '#cceecd';
+                default: return '#c9daff';
+            }
+        }
+
+        function addEvent() {
+            const title = document.getElementById('event-title').value;
+            const date = document.getElementById('event-date').value;
+            const start = document.getElementById('event-start').value;
+            const end = document.getElementById('event-end').value;
+            const desc = document.getElementById('event-desc').value;
+            
+            if (!title || !date) {
+                showNotification('Error', 'Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            const newEvent = {
+                id: Date.now(),
+                title,
+                date,
+                start,
+                end,
+                desc
+            };
+            
+            events.push(newEvent);
+            saveEvents();
+            generateCalendar();
+            closeModals();
+            
+            showNotification('Event Added', '"' + title + '" has been added to your calendar');
+            
+            // Reset form
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-date').value = '';
+            document.getElementById('event-start').value = '';
+            document.getElementById('event-end').value = '';
+            document.getElementById('event-desc').value = '';
+        }
+
+        function saveEvents() {
+            localStorage.setItem('events', JSON.stringify(events));
+        }
+
+        function loadEvents() {
+            // Events are loaded in generateCalendar()
+        }
+
+        // Subjects functionality
+        function addSubject() {
+            const name = document.getElementById('subject-name').value;
+            const code = document.getElementById('subject-code').value;
+            const color = document.getElementById('subject-color').value;
+            const instructor = document.getElementById('subject-instructor').value;
+            
+            if (!name) {
+                showNotification('Error', 'Please enter a subject name', 'warning');
+                return;
+            }
+            
+            const newSubject = {
+                id: Date.now(),
+                name,
+                code,
+                color,
+                instructor
+            };
+            
+            subjects.push(newSubject);
+            saveSubjects();
+            loadSubjects();
+            closeModals();
+            
+            showNotification('Subject Added', '"' + name + '" has been added to your subjects');
+            
+            // Reset form
+            document.getElementById('subject-name').value = '';
+            document.getElementById('subject-code').value = '';
+            document.getElementById('subject-color').value = '#c9daff';
+            document.getElementById('subject-instructor').value = '';
+        }
+
+        function saveSubjects() {
+            localStorage.setItem('subjects', JSON.stringify(subjects));
+        }
+
+        function loadSubjects() {
+            const subjectsList = document.getElementById('subjects-list');
+            subjectsList.innerHTML = '';
+            
+            if (subjects.length === 0) {
+                subjectsList.innerHTML = '<p class="empty-state">No subjects yet. Add your first subject!</p>';
+                return;
+            }
+            
+            subjects.forEach(subject => {
+                const subjectElement = document.createElement('div');
+                subjectElement.className = 'subject-item';
+                subjectElement.innerHTML = `
+                    <div class="subject-color" style="background-color: ${subject.color}"></div>
+                    <div class="subject-content">
+                        <div class="subject-name">${subject.name} ${subject.code ? `(${subject.code})` : ''}</div>
+                        <div class="subject-details">${subject.instructor || 'No instructor specified'}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-icon edit-subject" data-id="${subject.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-icon delete-subject" data-id="${subject.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                subjectsList.appendChild(subjectElement);
+            });
+            
+            // Add event listeners to subject buttons
+            document.querySelectorAll('.edit-subject').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const subjectId = parseInt(btn.getAttribute('data-id'));
+                    editSubject(subjectId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-subject').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const subjectId = parseInt(btn.getAttribute('data-id'));
+                    deleteSubject(subjectId);
+                });
+            });
+        }
+
+        function editSubject(subjectId) {
+            const subjectIndex = subjects.findIndex(subject => subject.id === subjectId);
+            if (subjectIndex !== -1) {
+                const subject = subjects[subjectIndex];
+                
+                // Populate the modal with subject data
+                document.getElementById('subject-name').value = subject.name;
+                document.getElementById('subject-code').value = subject.code || '';
+                document.getElementById('subject-color').value = subject.color;
+                document.getElementById('subject-instructor').value = subject.instructor || '';
+                
+                // Show the modal
+                document.getElementById('subject-modal').style.display = 'flex';
+                
+                // Change save button to update
+                const saveButton = document.getElementById('save-subject');
+                saveButton.textContent = 'Update Subject';
+                saveButton.onclick = function() {
+                    // Update the subject
+                    subjects[subjectIndex].name = document.getElementById('subject-name').value;
+                    subjects[subjectIndex].code = document.getElementById('subject-code').value;
+                    subjects[subjectIndex].color = document.getElementById('subject-color').value;
+                    subjects[subjectIndex].instructor = document.getElementById('subject-instructor').value;
+                    
+                    saveSubjects();
+                    loadSubjects();
+                    closeModals();
+                    
+                    // Reset button text
+                    saveButton.textContent = 'Add Subject';
+                    saveButton.onclick = addSubject;
+                    
+                    showNotification('Subject Updated', '"' + subject.name + '" has been updated');
+                };
+            }
+        }
+
+        function deleteSubject(subjectId) {
+            const subjectIndex = subjects.findIndex(subject => subject.id === subjectId);
+            if (subjectIndex !== -1) {
+                const subjectName = subjects[subjectIndex].name;
+                if (confirm('Are you sure you want to delete the subject "' + subjectName + '"?')) {
+                    subjects.splice(subjectIndex, 1);
+                    saveSubjects();
+                    loadSubjects();
+                    updateStats();
+                    
+                    showNotification('Subject Deleted', '"' + subjectName + '" has been removed');
+                }
+            }
+        }
+
+        // Resources functionality
+        function addResource() {
+            const name = prompt('Enter resource name:');
+            if (!name) return;
+            
+            const type = prompt('Enter resource type (book, website, video, etc.):');
+            const url = prompt('Enter resource URL (optional):');
+            
+            const newResource = {
+                id: Date.now(),
+                name,
+                type: type || 'other',
+                url: url || '',
+                added: new Date().toISOString()
+            };
+            
+            resources.push(newResource);
+            saveResources();
+            loadResources();
+            
+            showNotification('Resource Added', '"' + name + '" has been added to your resources');
+        }
+
+        function saveResources() {
+            localStorage.setItem('resources', JSON.stringify(resources));
+        }
+
+        function loadResources() {
+            const resourcesList = document.getElementById('resources-list');
+            resourcesList.innerHTML = '';
+            
+            if (resources.length === 0) {
+                resourcesList.innerHTML = '<p class="empty-state">No resources yet. Add your first resource!</p>';
+                return;
+            }
+            
+            resources.forEach(resource => {
+                let icon = 'fa-file';
+                if (resource.type.includes('book')) icon = 'fa-book';
+                if (resource.type.includes('website')) icon = 'fa-globe';
+                if (resource.type.includes('video')) icon = 'fa-video';
+                
+                const resourceElement = document.createElement('div');
+                resourceElement.className = 'resource-item';
+                resourceElement.innerHTML = `
+                    <div class="resource-icon">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="resource-content">
+                        <div class="resource-name">${resource.name}</div>
+                        <div class="resource-details">${resource.type} • Added: ${new Date(resource.added).toLocaleDateString()}</div>
+                    </div>
+                    <div>
+                        ${resource.url ? `<a href="${resource.url}" target="_blank" class="btn btn-icon"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                        <button class="btn btn-icon delete-resource" data-id="${resource.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                resourcesList.appendChild(resourceElement);
+            });
+            
+            // Add event listeners to resource buttons
+            document.querySelectorAll('.delete-resource').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const resourceId = parseInt(btn.getAttribute('data-id'));
+                    deleteResource(resourceId);
+                });
+            });
+        }
+
+        function deleteResource(resourceId) {
+            const resourceIndex = resources.findIndex(resource => resource.id === resourceId);
+            if (resourceIndex !== -1) {
+                const resourceName = resources[resourceIndex].name;
+                if (confirm('Are you sure you want to delete the resource "' + resourceName + '"?')) {
+                    resources.splice(resourceIndex, 1);
+                    saveResources();
+                    loadResources();
+                    
+                    showNotification('Resource Deleted', '"' + resourceName + '" has been removed');
+                }
+            }
+        }
+
+        // Reminders functionality
+        function addReminder() {
+            const title = prompt('Enter reminder title:');
+            if (!title) return;
+            
+            const date = prompt('Enter reminder date (YYYY-MM-DD):');
+            const time = prompt('Enter reminder time (HH:MM):');
+            
+            const newReminder = {
+                id: Date.now(),
+                title,
+                date: date || new Date().toISOString().split('T')[0],
+                time: time || '09:00',
+                created: new Date().toISOString()
+            };
+            
+            reminders.push(newReminder);
+            saveReminders();
+            loadReminders();
+            
+            showNotification('Reminder Added', '"' + title + '" has been added to your reminders');
+        }
+
+        function saveReminders() {
+            localStorage.setItem('reminders', JSON.stringify(reminders));
+        }
+
+        function loadReminders() {
+            const remindersList = document.getElementById('reminders-list');
+            remindersList.innerHTML = '';
+            
+            if (reminders.length === 0) {
+                remindersList.innerHTML = '<p class="empty-state">No reminders yet. Add your first reminder!</p>';
+                return;
+            }
+            
+            reminders.forEach(reminder => {
+                const reminderElement = document.createElement('div');
+                reminderElement.className = 'reminder-item';
+                reminderElement.innerHTML = `
+                    <div class="reminder-content">
+                        <div class="reminder-title">${reminder.title}</div>
+                        <div class="reminder-details">${reminder.date} at ${reminder.time} • Created: ${new Date(reminder.created).toLocaleDateString()}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-icon delete-reminder" data-id="${reminder.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                remindersList.appendChild(reminderElement);
+            });
+            
+            // Add event listeners to reminder buttons
+            document.querySelectorAll('.delete-reminder').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const reminderId = parseInt(btn.getAttribute('data-id'));
+                    deleteReminder(reminderId);
+                });
+            });
+        }
+
+        function deleteReminder(reminderId) {
+            const reminderIndex = reminders.findIndex(reminder => reminder.id === reminderId);
+            if (reminderIndex !== -1) {
+                const reminderTitle = reminders[reminderIndex].title;
+                if (confirm('Are you sure you want to delete the reminder "' + reminderTitle + '"?')) {
+                    reminders.splice(reminderIndex, 1);
+                    saveReminders();
+                    loadReminders();
+                    
+                    showNotification('Reminder Deleted', '"' + reminderTitle + '" has been removed');
+                }
+            }
+        }
+
+        // Progress charts
+        function loadProgressCharts() {
+            const progressCharts = document.getElementById('progress-charts');
+            progressCharts.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                progressCharts.innerHTML = '<p class="empty-state">No data yet. Complete some tasks to see your progress!</p>';
+                return;
+            }
+            
+            const completedTasks = tasks.filter(task => task.completed).length;
+            const completionRate = Math.round((completedTasks / tasks.length) * 100);
+            
+            const progressHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${completionRate}%</div>
+                    <div class="stat-label">Overall Completion</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${studyTimeThisWeek}h</div>
+                    <div class="stat-label">Study Time This Week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${sessionsCompleted}</div>
+                    <div class="stat-label">Pomodoro Sessions</div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3>Subject-wise Progress</h3>
+                    ${subjects.map(subject => {
+                        const subjectTasks = tasks.filter(task => task.subject === subject.name);
+                        const completedSubjectTasks = subjectTasks.filter(task => task.completed).length;
+                        const subjectCompletionRate = subjectTasks.length > 0 ? Math.round((completedSubjectTasks / subjectTasks.length) * 100) : 0;
+                        
+                        return `
+                            <div style="margin: 10px 0;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>${subject.name}</span>
+                                    <span>${subjectCompletionRate}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${subjectCompletionRate}%; background-color: ${subject.color}"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            progressCharts.innerHTML = progressHTML;
+        }
+
+        // Notification functionality
+        function showNotification(title, message, type = 'info') {
+            const notificationContainer = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'warning') icon = 'fa-exclamation-circle';
+            
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            notificationContainer.appendChild(notification);
+            
+            // Add close event
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                notification.remove();
+            });
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+            
+            // Save notification
+            notifications.push({
+                title,
+                message,
+                type,
+                time: new Date().toISOString()
+            });
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            updateNotificationCount();
+        }
+
+        function checkNotifications() {
+            // Check for upcoming deadlines
+            const now = new Date();
+            const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+            
+            tasks.forEach(task => {
+                if (!task.completed && task.due) {
+                    const dueDate = new Date(task.due);
+                    if (dueDate > now && dueDate <= oneHourFromNow) {
+                        showNotification('Upcoming Deadline', `"${task.title}" is due soon`, 'warning');
+                    }
+                }
+            });
+            
+            // Check for reminders
+            reminders.forEach(reminder => {
+                const reminderDate = new Date(reminder.date + 'T' + reminder.time);
+                if (reminderDate > now && reminderDate <= oneHourFromNow) {
+                    showNotification('Reminder', `"${reminder.title}" is coming up`, 'info');
+                }
+            });
+            
+            updateNotificationCount();
+        }
+
+        function updateNotificationCount() {
+            const unreadCount = notifications.filter(n => {
+                const notificationTime = new Date(n.time);
+                return new Date() - notificationTime < 24 * 60 * 60 * 1000; // Last 24 hours
+            }).length;
+            
+            const notificationCount = document.getElementById('notification-count');
+            if (unreadCount > 0) {
+                notificationCount.textContent = unreadCount;
+                notificationCount.style.display = 'flex';
+            } else {
+                notificationCount.style.display = 'none';
+            }
+        }
+
+        function showNotifications() {
+            alert('Recent notifications:\n\n' + 
+                notifications.slice(-5).map(n => 
+                    `[${new Date(n.time).toLocaleTimeString()}] ${n.title}: ${n.message}`
+                ).join('\n\n'));
+        }
+
+        function checkUpcomingDeadlines() {
+            checkNotifications();
+        }
+
+        // Backup and restore functionality
+        function backupData() {
+            const data = {
+                tasks: tasks,
+                notes: notes,
+                timetable: timetable,
+                subjects: subjects,
+                resources: resources,
+                reminders: reminders,
+                events: events,
+                sessionsCompleted: sessionsCompleted,
+                studyTimeThisWeek: studyTimeThisWeek,
+                settings: {
+                    darkMode: localStorage.getItem('darkMode') === 'true',
+                    dashboardTitle: localStorage.getItem('dashboardTitle')
+                },
+                exportedAt: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `study_planner_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('Backup Created', 'Your data has been backed up successfully', 'success');
+        }
+
+        function restoreData() {
+            const fileInput = document.getElementById('restore-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('Error', 'Please select a backup file first', 'warning');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm('This will replace all your current data. Are you sure?')) {
+                        if (data.tasks) tasks = data.tasks;
+                        if (data.notes) notes = data.notes;
+                        if (data.timetable) timetable = data.timetable;
+                        if (data.subjects) subjects = data.subjects;
+                        if (data.resources) resources = data.resources;
+                        if (data.reminders) reminders = data.reminders;
+                        if (data.events) events = data.events;
+                        if (data.sessionsCompleted) sessionsCompleted = data.sessionsCompleted;
+                        if (data.studyTimeThisWeek) studyTimeThisWeek = data.studyTimeThisWeek;
+                        
+                        if (data.settings) {
+                            if (data.settings.darkMode) {
+                                document.body.classList.add('dark-mode');
+                            } else {
+                                document.body.classList.remove('dark-mode');
+                            }
+                            localStorage.setItem('darkMode', data.settings.darkMode);
+                            
+                            if (data.settings.dashboardTitle) {
+                                document.getElementById('dashboard-title').value = data.settings.dashboardTitle;
+                                localStorage.setItem('dashboardTitle', data.settings.dashboardTitle);
+                            }
+                        }
+                        
+                        saveTasks();
+                        saveNotes();
+                        saveTimetable();
+                        saveSubjects();
+                        saveResources();
+                        saveReminders();
+                        saveEvents();
+                        localStorage.setItem('sessionsCompleted', sessionsCompleted);
+                        localStorage.setItem('studyTimeThisWeek', studyTimeThisWeek);
+                        
+                        loadTasks();
+                        loadNotes();
+                        loadTimetable();
+                        loadSubjects();
+                        loadResources();
+                        loadReminders();
+                        loadEvents();
+                        updateStats();
+                        document.getElementById('sessions-count').textContent = sessionsCompleted;
+                        
+                        showNotification('Data Restored', 'Your data has been restored successfully', 'success');
+                        fileInput.value = '';
+                    }
+                } catch (error) {
+                    showNotification('Error', 'Invalid backup file format', 'warning');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm('This will permanently delete ALL your data. Are you absolutely sure?')) {
+                tasks = [];
+                notes = [];
+                timetable = [];
+                subjects = [];
+                resources = [];
+                reminders = [];
+                events = [];
+                sessionsCompleted = 0;
+                studyTimeThisWeek = 0;
+                localStorage.removeItem('tasks');
+                localStorage.removeItem('notes');
+                localStorage.removeItem('timetable');
+                localStorage.removeItem('subjects');
+                localStorage.removeItem('resources');
+                localStorage.removeItem('reminders');
+                localStorage.removeItem('events');
+                localStorage.removeItem('sessionsCompleted');
+                localStorage.removeItem('studyTimeThisWeek');
+                localStorage.removeItem('darkMode');
+                localStorage.removeItem('dashboardTitle');
+                localStorage.removeItem('notifications');
+                
+                document.body.classList.remove('dark-mode');
+                document.getElementById('dashboard-title').value = 'My Study Dashboard';
+                
+                loadTasks();
+                loadNotes();
+                loadTimetable();
+                loadSubjects();
+                loadResources();
+                loadReminders();
+                loadEvents();
+                updateStats();
+                newNote();
+                document.getElementById('sessions-count').textContent = 0;
+                
+                showNotification('Data Cleared', 'All data has been removed', 'info');
+            }
+        }
+
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModals();
+            }
         });
     </script>
 </body>
